@@ -1,7 +1,9 @@
 import api from "./axios";
 
-export const getTags = (data) => {
-  return api.post("/documentTags", data);
+export const getTags = (term = "") => {
+  return api.post("/documentTags", {
+    term,
+  });
 };
 
 export const uploadDocument = (formData) => {
