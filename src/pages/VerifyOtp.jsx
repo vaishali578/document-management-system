@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { validateOTP } from "../api/authApi";
 import toast, { Toaster } from "react-hot-toast";
+import useAuthStore from "../store/authStore";
 
 function VerifyOtp() {
   const [otp, setOtp] = useState("");
@@ -30,11 +31,7 @@ function VerifyOtp() {
 
       const data = response.data.data;
 
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user_id", data.user_id);
-      localStorage.setItem("user_name", data.user_name);
-      localStorage.setItem("roles", JSON.stringify(data.roles));
-
+      login(data);
       toast.success("Login Successful");
 
       navigate("/dashboard");
