@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { validateOTP } from "../api/authApi";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import useAuthStore from "../store/authStore";
 
 function VerifyOtp() {
@@ -11,9 +11,17 @@ function VerifyOtp() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const login = useAuthStore((state) => state.login);
+  const { token, login } = useAuthStore();
 
   const mobileNumber = location.state?.mobileNumber;
+
+  useEffect(() => {
+    if (token) {
+      navigate("/dashboard", { replace: true });
+    } else if (!mobileNumber) {
+      navigate("/", { replace: true });
+    }
+  }, [token, mobileNumber, navigate]);
 
   const handleVerify = async (e) => {
     e.preventDefault();
@@ -47,51 +55,67 @@ function VerifyOtp() {
 
   return (
     <>
-      <Toaster />
+      {/* Animated background */}
+      <div className="dms-bg-mesh">
+        <div className="dms-bg-grid" />
+        <div className="dms-orb dms-orb-1" />
+        <div className="dms-orb dms-orb-2" />
+      </div>
 
-      <div className="container mt-5">
-        <div className="row justify-content-center">
+      <div className="floating-dot floating-dot-1" />
+      <div className="floating-dot floating-dot-2" />
+      <div className="floating-dot floating-dot-3" />
+      <div className="floating-dot floating-dot-4" />
 
-          <div className="col-md-5">
+      <div className="dms-page">
+        <div className="auth-card">
 
-            <div className="card shadow">
-
-              <div className="card-body">
-
-                <h3 className="text-center mb-4">
-                  Verify OTP
-                </h3>
-
-                <p className="text-center">
-                  Mobile Number
-                  <br />
-                  <strong>{mobileNumber}</strong>
-                </p>
-
-                <form onSubmit={handleVerify}>
-
-                  <input
-                    type="text"
-                    className="form-control mb-3"
-                    placeholder="Enter OTP"
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                  />
-
-                  <button
-                    className="btn btn-success w-100"
-                    disabled={loading}
-                  >
-                    {loading ? "Verifying..." : "Verify OTP"}
-                  </button>
-
-                </form>
-
+          {/* Icon */}
+          <div className="auth-logo">
+            <div className="auth-logo-icon-wrap">
+              <div className="ring" />
+              <div className="auth-logo-icon" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M9 12l2 2 4-4" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="12" cy="12" r="9" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5"/>
+                </svg>
               </div>
+            </div>
+            <div className="auth-title">Verify OTP</div>
+          </div>
 
+          <p className="auth-subtitle">
+            We sent a 6-digit code to{" "}
+            <span style={{ color: 'var(--accent)', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
+              {mobileNumber}
+            </span>
+          </p>
+
+          <form onSubmit={handleVerify}>
+
+            <div className="dms-field">
+              <label className="dms-label">🔐 One-Time Password</label>
+              <input
+                type="text"
+                className="dms-input otp-input"
+                placeholder="● ● ● ● ● ●"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                maxLength={6}
+              />
             </div>
 
-          </div>
+            <div className="dms-btn-submit-wrap">
+              <button
+                className="dms-btn dms-btn-success dms-btn-full"
+                disabled={loading}
+              >
+                {loading && <span className="dms-spinner" />}
+                {loading ? "Verifying…" : "Verify & Sign In →"}
+              </button>
+            </div>
+
+          </form>
 
         </div>
       </div>

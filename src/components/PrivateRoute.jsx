@@ -1,5 +1,6 @@
 import { Navigate } from "react-router-dom";
 import useAuthStore from "../store/authStore";
+import Navbar from "./Navbar";
 
 function PrivateRoute({ children }) {
   const token = useAuthStore((state) => state.token);
@@ -8,7 +9,12 @@ function PrivateRoute({ children }) {
     return <Navigate to="/" replace />;
   }
 
-  return children;
+  return (
+    <>
+      <Navbar />
+      {children}
+    </>
+  );
 }
 
 export default PrivateRoute;
