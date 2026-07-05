@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useRef, useEffect, useState } from "react";
 import CreatableSelect from "react-select/creatable";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { getTags } from "../api/documentApi";
+import { getTags, uploadDocument } from "../api/documentApi";
+import toast from "react-hot-toast";
 
 const UploadDocument = () => {
   const [documentDate, setDocumentDate] = useState(new Date());
@@ -20,6 +21,7 @@ const UploadDocument = () => {
   const [tagOptions, setTagOptions] = useState([]);
 
   const [selectedTags, setSelectedTags] = useState([]);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     fetchTags();
@@ -75,6 +77,95 @@ const UploadDocument = () => {
     }
   };
 
+  const formatDate = (date) => {
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+
+    return `${day}-${month}-${year}`;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Validation
+    if (!majorHead) {
+      toast.error("Please select category");
+      return;
+    }
+
+    if (!minorHead) {
+      toast.error("Please select sub category");
+      return;
+    }
+
+    if (selectedTags.length === 0) {
+      toast.error("Please select at least one tag");
+      return;
+    }
+
+    if (!remarks.trim()) {
+      toast.error("Please enter remarks");
+      return;
+    }
+
+    if (!selectedFile) {
+      toast.error("Please choose a file");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const tags = selectedTags.map((tag) => ({
+        tag_name: tag.label,
+      }));
+
+      const payload = {
+        major_head: majorHead,
+        minor_head: minorHead,
+        document_date: formatDate(documentDate),
+        document_remarks: remarks,
+        tags,
+        user_id: localStorage.getItem("user_id"),
+      };
+
+      const formData = new FormData();
+
+      formData.append("file", selectedFile);
+
+      formData.append("data", JSON.stringify(payload));
+
+      const response = await uploadDocument(formData);
+
+      console.log(response.data);
+
+      toast.success("Document uploaded successfully");
+
+      resetForm();
+    } catch (error) {
+      console.error(error);
+
+      toast.error("Upload failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setDocumentDate(new Date());
+    setMajorHead("");
+    setMinorHead("");
+    setRemarks("");
+    setSelectedFile(null);
+    setSelectedTags([]);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+
   return (
     <div className="container mt-4">
       <div className="card shadow">
@@ -82,7 +173,7 @@ const UploadDocument = () => {
 
           <h3 className="mb-4">Upload Document</h3>
 
-          <form>
+          <form onSubmit={handleSubmit}>
 
             <div className="row">
 
@@ -197,22 +288,28 @@ const UploadDocument = () => {
                 </label>
 
                 <input
+                  ref={fileInputRef}
                   type="file"
                   className="form-control"
                   accept=".png,.jpg,.jpeg,.pdf"
                   onChange={handleFileChange}
                 />
+
+                {selectedFile && (
+                  <small className="text-success mt-2 d-block">
+                    Selected File: {selectedFile.name}
+                  </small>
+                )}
               </div>
 
               {/* Upload Button */}
-              <div className="col-12">
-                <button
-                  type="submit"
-                  className="btn btn-primary"
-                >
-                  Upload Document
-                </button>
-              </div>
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={loading}
+              >
+                {loading ? "Uploading..." : "Upload Document"}
+              </button>
 
             </div>
 

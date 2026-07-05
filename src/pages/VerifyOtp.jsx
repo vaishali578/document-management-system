@@ -11,6 +11,8 @@ function VerifyOtp() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const login = useAuthStore((state) => state.login);
+
   const mobileNumber = location.state?.mobileNumber;
 
   const handleVerify = async (e) => {
